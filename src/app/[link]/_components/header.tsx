@@ -1,9 +1,9 @@
 'use client';
 
-import LinkQRModal from '@/components/modals/link-qr-modal';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import VerifiedBadge from '@/components/verified-badge';
+import { getProfilePublicUrl } from '@/lib/profile-url';
 import { type RouterOutputs, api } from '@/trpc/react';
 import Highlight from '@tiptap/extension-highlight';
 import TiptapLink from '@tiptap/extension-link';
@@ -16,7 +16,6 @@ import {
   Eye,
   Monitor,
   PenLine,
-  QrCode,
   Share2,
   Smartphone,
 } from 'lucide-react';
@@ -102,6 +101,35 @@ export default function ProfileLinkHeader({
   }
 
   const isEditable = profileLink.isOwner && !preview;
+  const publicUrl = getProfilePublicUrl({
+    link: profileLink.link,
+    customDomain: profileLink.customDomain,
+  });
+
+  const copyPublicUrl = () => {
+    navigator.clipboard
+      .writeText(publicUrl)
+      .then(() => {
+        toast({
+          title: 'Copied to clipboard!',
+          description: 'Copied profile link to clipboard!',
+        });
+      })
+      .catch(() => undefined);
+  };
+
+  const sharePublicUrl = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: profileLink.name ?? 'OpenBio Profile',
+          url: publicUrl,
+        })
+        .catch(() => undefined);
+    } else {
+      copyPublicUrl();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-y-4" data-tour="profile-header">
@@ -147,28 +175,9 @@ export default function ProfileLinkHeader({
                   </Button>
                 </div>
 
-                <Button
-                  disabled={saving}
-                  onClick={() => {
-                    navigator.clipboard
-                      .writeText(`https://openbio.app/${profileLink.link}`)
-                      .then(() => {
-                        toast({
-                          title: 'Copied to clipboard!',
-                          description: 'Copied profile link to clipboard!',
-                        });
-                      })
-                      .catch(() => undefined);
-                  }}
-                >
+                <Button disabled={saving} onClick={copyPublicUrl}>
                   {saving ? 'Saving...' : 'Share'}
                 </Button>
-
-                <LinkQRModal profileLink={profileLink}>
-                  <Button size="icon" variant="outline" disabled={saving}>
-                    <QrCode className="h-[1.2rem] w-[1.2rem]" />
-                  </Button>
-                </LinkQRModal>
               </>
             )}
           </div>
@@ -176,39 +185,10 @@ export default function ProfileLinkHeader({
 
         {!profileLink.isOwner && (
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const url = `https://openbio.app/${profileLink.link}`;
-                if (navigator.share) {
-                  navigator
-                    .share({
-                      title: profileLink.name ?? 'OpenBio Profile',
-                      url,
-                    })
-                    .catch(() => undefined);
-                } else {
-                  navigator.clipboard
-                    .writeText(url)
-                    .then(() => {
-                      toast({
-                        title: 'Copied to clipboard!',
-                        description: 'Profile link copied!',
-                      });
-                    })
-                    .catch(() => undefined);
-                }
-              }}
-            >
+            <Button variant="outline" size="sm" onClick={sharePublicUrl}>
               <Share2 className="mr-1.5 h-4 w-4" />
               Share
             </Button>
-            <LinkQRModal profileLink={profileLink}>
-              <Button size="icon" variant="outline" className="h-9 w-9">
-                <QrCode className="h-4 w-4" />
-              </Button>
-            </LinkQRModal>
           </div>
         )}
       </div>

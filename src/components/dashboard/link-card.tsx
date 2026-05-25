@@ -1,9 +1,8 @@
 'use client';
 
-import LinkQRModal from '@/components/modals/link-qr-modal';
 import { Button } from '@/components/ui/button';
 import { type RouterOutputs, api } from '@/trpc/react';
-import { BarChart3, ExternalLink, Eye, QrCode, Trash2 } from 'lucide-react';
+import { BarChart3, ExternalLink, Eye, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -52,11 +51,6 @@ export function DashboardLinkCard({ link }: { link: ProfileLink }) {
             <BarChart3 className="h-4 w-4" />
           </Button>
         </Link>
-        <LinkQRModal profileLink={link} linkSlug={link.link}>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <QrCode className="h-4 w-4" />
-          </Button>
-        </LinkQRModal>
         <Button
           variant="ghost"
           size="icon"

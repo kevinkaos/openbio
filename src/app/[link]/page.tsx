@@ -4,11 +4,10 @@ import {
   twitterMetadata,
 } from '@/app/shared-metadata';
 import OnboardingTour from '@/components/onboarding-tour';
+import { getProfilePublicUrl } from '@/lib/profile-url';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/trpc/server';
-import { ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense, cache } from 'react';
 import ActionBar from './_components/action-bar';
@@ -68,7 +67,10 @@ export default async function Page({ params }: Props) {
   }
 
   const bio = (profileLink.bio ?? '').replace(/<[^>]*>/g, '');
-  const profileUrl = `https://openbio.app/${profileLink.link}`;
+  const profileUrl = getProfilePublicUrl({
+    link: profileLink.link,
+    customDomain: profileLink.customDomain,
+  });
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -128,24 +130,13 @@ export default async function Page({ params }: Props) {
                     </>
                   )}
 
-                  <footer className="animate-fade-in py-8 text-center">
-                    {profileLink.customFooter ? (
+                  {profileLink.customFooter ? (
+                    <footer className="animate-fade-in py-8 text-center">
                       <p className="text-muted-foreground text-xs">
                         {profileLink.customFooter}
                       </p>
-                    ) : (
-                      <Link
-                        href="/claim-link"
-                        className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-4 py-2 text-muted-foreground text-sm backdrop-blur-sm transition-all hover:border-primary hover:text-foreground"
-                      >
-                        Create your own free page on
-                        <span className="font-semibold text-foreground">
-                          OpenBio
-                        </span>
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </Link>
-                    )}
-                  </footer>
+                    </footer>
+                  ) : null}
                 </div>
               </ViewportContainer>
             </BentoHistoryProvider>
